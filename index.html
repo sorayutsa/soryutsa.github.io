@@ -1,86 +1,87 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Mask Detection App</title>
+<title>Test Detection Mask</title>
 
 <style>
 body {
     margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #1976d2, #64b5f6);
+    font-family: Arial, sans-serif;
+    background: #eaeaea;
 }
 
-/* กล่องแอป */
 .app {
     max-width: 420px;
     margin: auto;
+    background: white;
     min-height: 100vh;
-    background: #ffffff;
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
 
-/* Header */
 .header {
-    background: #1976d2;
+    background: #38761d;
     color: white;
-    padding: 18px;
+    padding: 15px;
     text-align: center;
-    font-size: 20px;
-    font-weight: bold;
-}
-
-/* Content */
-.content {
-    padding: 16px;
-    text-align: center;
-}
-
-/* ปุ่ม */
-button {
-    width: 100%;
-    padding: 14px;
-    font-size: 17px;
-    background: #1976d2;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    box-shadow: 0 5px 0 #0d47a1;
-    transition: 0.1s;
-}
-
-button:hover {
-    background: #1565c0;
-}
-
-button:active {
-    transform: translateY(3px);
-    box-shadow: 0 2px 0 #0d47a1;
-}
-
-/* กล้อง */
-#webcam-container canvas {
-    width: 100%;
-    margin-top: 16px;
-    border-radius: 16px;
-    border: 3px solid #e0e0e0;
-}
-
-/* กล่องผลลัพธ์ */
-#label-container {
-    margin-top: 15px;
-}
-
-#label-container div {
-    margin-top: 8px;
-    padding: 12px;
-    border-radius: 14px;
     font-size: 18px;
     font-weight: bold;
+}
+
+.content {
+    padding: 15px;
+    text-align: center;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    background: #38761d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+}
+
+#webcam-container canvas {
+    width: 100%;
+    margin-top: 15px;
+    border-radius: 12px;
+    border: 2px solid #ddd;
+}
+
+#label-container {
+    margin-top: 15px;
     background: #f5f5f5;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 16px;
+}
+button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    background: #38761d;
+    color: white;
+    border: none;
+    border-radius: 8px;
+
+    /* เพิ่มความรู้สึกเหมือนปุ่มจริง */
+    box-shadow: 0 4px 0 #93c47d;
+    transition: all 0.1s ease;
+    cursor: pointer;
+}
+
+/* ตอนเอาเมาส์ชี้ */
+button:hover {
+    background: #93c47d;
+}
+
+/* ตอนกดปุ่ม */
+button:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #d9ead3;
+    background: #d9ead3;
 }
 </style>
 </head>
@@ -88,57 +89,60 @@ button:active {
 <body>
 
 <div class="app">
-    <div class="header">😷 Mask Detection</div>
+    <div class="header">Mask Detection App</div>
 
     <div class="content">
-        <button onclick="init()">📷 Start Camera</button>
+        <button type="button" onclick="init()">Start Camera</button>
 
         <div id="webcam-container"></div>
+
         <div id="label-container"></div>
     </div>
 </div>
 
-<!-- JS เดิมของคุณ -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
 <script type="text/javascript">
-const URL = "https://teachablemachine.withgoogle.com/models/fpDwk9t76/";
+    const URL = "https://teachablemachine.withgoogle.com/models/fpDwk9t76/";
 
-let model, webcam, labelContainer, maxPredictions;
+    let model, webcam, labelContainer, maxPredictions;
 
-async function init() {
-    const modelURL = URL + "model.json";
-    const metadataURL = URL + "metadata.json";
+    async function init() {
+        const modelURL = URL + "model.json";
+        const metadataURL = URL + "metadata.json";
 
-    model = await tmImage.load(modelURL, metadataURL);
-    maxPredictions = model.getTotalClasses();
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
 
-    webcam = new tmImage.Webcam(320, 320, true);
-    await webcam.setup();
-    await webcam.play();
-    window.requestAnimationFrame(loop);
+        const flip = true;
+        webcam = new tmImage.Webcam(200, 200, flip);
+        await webcam.setup();
+        await webcam.play();
+        window.requestAnimationFrame(loop);
 
-    document.getElementById("webcam-container").appendChild(webcam.canvas);
-    labelContainer = document.getElementById("label-container");
-}
+        document.getElementById("webcam-container").appendChild(webcam.canvas);
+        labelContainer = document.getElementById("label-container");
+        labelContainer.innerHTML = "";
+        for (let i = 0; i < maxPredictions; i++) {
+            labelContainer.appendChild(document.createElement("div"));
+        }
+    }
 
-async function loop() {
-    webcam.update();
-    await predict();
-    window.requestAnimationFrame(loop);
-}
+    async function loop() {
+        webcam.update();
+        await predict();
+        window.requestAnimationFrame(loop);
+    }
 
-async function predict() {
-    const prediction = await model.predict(webcam.canvas);
-    labelContainer.innerHTML = "";
-
-    prediction.forEach(p => {
-        const div = document.createElement("div");
-        div.innerHTML = `${p.className} : ${(p.probability * 100).toFixed(1)} %`;
-        labelContainer.appendChild(div);
-    });
-}
+    async function predict() {
+        const prediction = await model.predict(webcam.canvas);
+        for (let i = 0; i < maxPredictions; i++) {
+            const classPrediction =
+                prediction[i].className + ": " + (prediction[i].probability * 100).toFixed(2) + "%";
+            labelContainer.childNodes[i].innerHTML = classPrediction;
+        }
+    }
 </script>
 
 </body>
