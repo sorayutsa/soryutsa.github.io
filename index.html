@@ -1,39 +1,105 @@
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background: #f4f6f8;
-  text-align: center;
-  margin: 0;
-  padding: 40px;
-}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Mask Detection App</title>
 
-.container {
-  background: white;
-  max-width: 600px;
-  margin: auto;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-}
+  <!-- TensorFlow + Teachable Machine -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 
-h1 {
-  color: #333;
-}
+  <!-- CSS -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
 
-button {
-  background: #4CAF50;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  font-size: 16px;
-  border-radius: 8px;
-  cursor: pointer;
-}
+    .container {
+      max-width: 400px;
+      margin: auto;
+      margin-top: 50px;
+      background: rgba(255,255,255,0.15);
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
 
-button:hover {
-  background: #43a047;
-}
+    button {
+      background: #00e676;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
 
-#label-container div {
-  margin-top: 8px;
-  font-size: 18px;
-}
+    button:hover {
+      background: #00c853;
+    }
+
+    #label-container div {
+      margin-top: 8px ส
+      font-size: 18px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>😷 ตรวจจับการใส่หน้ากาก</h2>
+    <button onclick="init()">เริ่มเปิดกล้อง</button>
+
+    <div id="webcam-container"></div>
+    <div id="label-container"></div>
+  </div>
+
+<script>
+  const URL = "https://teachablemachine.withgoogle.com/models/fpDwK9t76/";
+
+  let model, webcam, labelContainer, maxPredictions;
+
+  async function init() {
+    const modelURL = URL + "model.json";
+    const metadataURL = URL + "metadata.json";
+
+    model = await tmImage.load(modelURL, metadataURL);
+    maxPredictions = model.getTotalClasses();
+
+    webcam = new tmImage.Webcam(300, 300, true);
+    await webcam.setup();
+    await webcam.play();
+    window.requestAnimationFrame(loop);
+
+    document.getElementById("webcam-container").appendChild(webcam.canvas);
+
+    labelContainer = document.getElementById("label-container");
+    labelContainer.innerHTML = "";
+    for (let i = 0; i < maxPredictions; i++) {
+      labelContainer.appendChild(document.createElement("div"));
+    }
+  }
+
+  async function loop() {
+    webcam.update();
+    await predict();
+    window.requestAnimationFrame(loop);
+  }
+
+  async function predict() {
+    const prediction = await model.predict(webcam.canvas);
+    for (let i = 0; i < maxPredictions; i++) {
+      const classPrediction =
+        prediction[i].className + ": " +
+        (prediction[i].probability * 100).toFixed(2) + "%";
+      labelContainer.childNodes[i].innerHTML = classPrediction;
+    }
+  }
+</script>
+</body>
+</html>
